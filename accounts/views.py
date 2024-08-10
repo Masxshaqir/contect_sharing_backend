@@ -132,12 +132,8 @@ def update_profile(request):
 def get_all_users(request):
     try:
         all_users = list(
-            User.objects.exclude(id=request.user.id)
-            .exclude(
-                id__in=Friend.objects.filter(follower=request.user.id).values(
-                    "followed"
-                )
-            )
+            User.objects.exclude(id=request.user.id).exclude(is_superuser=True)
+            .exclude(id__in=Friend.objects.filter(follower=request.user.id).values("followed"))
             .values("first_name", "last_name", "email")
         )
         return JsonResponse({"result": all_users}, safe=False, status=200)
