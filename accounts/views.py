@@ -1,11 +1,11 @@
-from post.models import Post
+from post.models import Post ,Comment
 from rest_framework import status
 from accounts.serializer import *
 from django.http import JsonResponse
 from contect_sharing import settings
 from django.db import transaction
 from rest_framework.authtoken.models import Token
-
+from .models import User
 from django.contrib import auth
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -78,7 +78,7 @@ def Logout(request):
             user = User.objects.filter(id=request.user.id)
             if user:
                 token = Token.objects.filter(user=request.user.id).first()
-                logout(request)
+                auth.logout(request)
                 if token:
                     token.delete()
             return JsonResponse({"result": "logged out"}, safe=False, status=200)
@@ -94,6 +94,10 @@ def get_profile(request):
         posts = list(Post.objects.filter(user=user.id).values( 'id',"title", "category", "hashtag", "contect", "post_image", "post_time"))
         for i in posts:
                 i["post_image"] = request.scheme+'://' + request.get_host() + "/" + i["post_image"]
+                i["comments"] = list(
+                Comment.objects.filter(post=i["id"]).values('id',"comment", "comment_time", "user__email","user__first_name","user__last_name")
+                )
+                
         user_data = {
             "last_login": user.last_login,
             "date_joined": user.date_joined,
@@ -164,7 +168,7 @@ def add_friend(request):
     try:
         with transaction.atomic():
             request.data["follower"] = request.user.id
-
+            request.data["followed"] = User.objects.filter(email=request.data['followed_email']).values('id')[0]['id']
             add_Friend = addFriendSerializer(data=request.data)
 
             if add_Friend.is_valid():

@@ -8,6 +8,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+import uuid
 
 
 class CustomUserManager(BaseUserManager):
@@ -38,9 +39,10 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None  # Remove the username field
     email = models.EmailField(unique=True)
-
+    post_image=models.FileField(upload_to='static/Profile/',null=True,blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
@@ -50,6 +52,8 @@ class User(AbstractUser):
         return self.email
     
 class Friend(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     followed = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
     follower = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE)
     follow_time=models.DateTimeField(auto_now_add=True)

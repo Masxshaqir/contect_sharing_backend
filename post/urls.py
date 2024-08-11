@@ -7,4 +7,7 @@ urlpatterns = [
     path('add_post/', add_post , name="add_post"),
     path('get_all_posts/', get_all_posts , name="get_all_posts"),
     path('update_post/', update_post , name="update_post"),
+    path('add_comment/', add_comment , name="add_comment"),
+    path('update_comment/', update_comment , name="update_comment"),
+    path('delete_comment/', delete_comment , name="delete_comment"),
 ]
