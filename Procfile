@@ -1,0 +1,1 @@
+web: gunicorn contect_sharing.wsgi
