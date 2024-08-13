@@ -86,7 +86,7 @@ def Logout(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def get_profile(request):
     try:
