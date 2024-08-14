@@ -68,8 +68,9 @@ def get_all_posts(request):
 def add_post(request):
     try:
         with transaction.atomic():
-            request.data["user"] = request.user.id
-            new_postSerializer = addPostSerializer(data=request.data)
+            data = request.data.copy()
+            data["user"] = request.user.id
+            new_postSerializer = addPostSerializer(data=data)
             if new_postSerializer.is_valid():
                 new_postSerializer.save()
 
