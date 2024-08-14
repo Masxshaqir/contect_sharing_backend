@@ -36,7 +36,6 @@ class Comment(models.Model):
     def __str__(self):
         return f"{self.user.email} Comment on  {self.post.title}"
     
-    
 class Vote(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     vote=models.IntegerField(null=False,blank=False,choices=((1,1),(2,2),(3,3),(4,4),(5,5)))

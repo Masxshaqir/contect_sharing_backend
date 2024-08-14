@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import Friend, User
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -30,3 +30,4 @@ class CustomUserAdmin(BaseUserAdmin):
         super().save_model(request, obj, form, change)
 
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Friend)
