@@ -11,4 +11,6 @@ urlpatterns = [
     path('get_all_users/', get_all_users , name="get_all_users"),
     path('get_following_users/', get_following_users , name="get_following_users"),
     path('update_profile/', update_profile , name="update_profile"),
+    path('delete_friend/', delete_friend , name="delete_friend"),
+
 ]

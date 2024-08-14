@@ -37,3 +37,14 @@ class Comment(models.Model):
         return f"{self.user.email} Comment on  {self.post.title}"
     
     
+class Vote(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    vote=models.IntegerField(null=False,blank=False,choices=((1,1),(2,2),(3,3),(4,4),(5,5)))
+    vote_time=models.DateTimeField(auto_now_add=True)
+    vote_update_time=models.DateTimeField(auto_now=True)
+    user= models.ForeignKey(User, on_delete=models.CASCADE)
+    post=models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.email} Rate on  {self.post.title}"
+    

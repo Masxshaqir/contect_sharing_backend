@@ -1,6 +1,6 @@
 
 
-from .models import  Post,Comment
+from .models import  Post,Comment, Vote
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -28,5 +28,17 @@ class addCommentSerializer(serializers.ModelSerializer):
 class UpdateCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
+        fields = '__all__'
+        partial = True
+
+class addVoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vote
+        fields = '__all__'
+ 
+
+class UpdateVoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vote
         fields = '__all__'
         partial = True

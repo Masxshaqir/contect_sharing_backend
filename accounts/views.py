@@ -1,4 +1,4 @@
-from post.models import Post ,Comment
+from post.models import Post ,Comment, Vote
 from rest_framework import status
 from accounts.serializer import *
 from django.http import JsonResponse
@@ -97,6 +97,14 @@ def get_profile(request):
                 i["comments"] = list(
                 Comment.objects.filter(post=i["id"]).values('id',"comment", "comment_time", "user__email","user__first_name","user__last_name")
                 )
+                i['all_votes'] = list(Vote.objects.filter(post=i["id"]).values(
+                            "vote",
+                            "vote_time",
+                            "vote_update_time",
+                            "user__first_name",
+                            "user__last_name",
+                            "user__email",))
+                i['vote_counts'] = Vote.objects.filter(post=i["id"]).count()
                 
         user_data = {
             "last_login": user.last_login,
@@ -181,5 +189,20 @@ def add_friend(request):
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_friend(request):
+    try:
+        with transaction.atomic():
+            request.data["follower"] = request.user.id
+            request.data["followed"] = User.objects.filter(email=request.data['followed_email']).values('id')[0]['id']
+            
+            Friend.objects.get(follower=request.data["follower"] ,followed=request.data["followed"]).delete()
+            
+            return JsonResponse({"result": "followed"}, safe=False, status=200)
+            
+    except Exception as error:
+        return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
