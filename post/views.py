@@ -204,62 +204,54 @@ def delete_comment(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def add_vote(request):
+def add_update_vote(request):
     try:
         with transaction.atomic():
-            request.data["user"] = request.user.id
+            if request.data['id']:
+                Vote_obj = Vote.objects.get(post=request.data['post'],user=request.user.id)
+                if not Vote_obj:
+                    request.data["user"] = request.user.id
 
-            new_voteSerializer = addVoteSerializer(data=request.data)
-            if new_voteSerializer.is_valid():
-                new_voteSerializer.save()
+                    new_voteSerializer = addVoteSerializer(data=request.data)
+                    if new_voteSerializer.is_valid():
+                        new_voteSerializer.save()
 
-                return JsonResponse(
-                    {"result": "voted Succefully"}, safe=False, status=200
-                )
-            else:
-                return JsonResponse(
-                    new_voteSerializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
-    except Exception as error:
-        return JsonResponse({"result": str(error)}, safe=False, status=400)
-
-
-@api_view(["PUT"])
-@permission_classes([IsAuthenticated])
-def update_vote(request):
-    try:
-        with transaction.atomic():
-
-            vote_obj = Vote.objects.get(id=request.data["id"])
-            if vote_obj:
-
-                if not (vote_obj.user == request.user.id):
-                    return JsonResponse(
-                        {"result": "you can't edit this comment"},
-                        safe=False,
-                        status=400,
-                    )
-                Update_VoteSerializer = UpdateVoteSerializer(
-                    vote_obj, data=request.data, partial=True
-                )
-                if Update_VoteSerializer.is_valid():
-                    Update_VoteSerializer.save()
-
-                    return JsonResponse(
-                        {"result": "Updated Succefully"}, safe=False, status=200
-                    )
+                        return JsonResponse(
+                            {"result": "voted Succefully"}, safe=False, status=200
+                        )
+                    else:
+                        return JsonResponse(
+                            new_voteSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+                        )
                 else:
-                    return JsonResponse(
-                        Update_VoteSerializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST,
+                    if not (Vote_obj.user == request.user.id):
+                        return JsonResponse(
+                            {"result": "you can't edit this comment"},
+                            safe=False,
+                            status=400,
+                        )
+                    Update_VoteSerializer = UpdateVoteSerializer(
+                        Vote_obj, data=request.data, partial=True
                     )
+                    if Update_VoteSerializer.is_valid():
+                        Update_VoteSerializer.save()
+
+                        return JsonResponse(
+                            {"result": "Updated Succefully"}, safe=False, status=200
+                        )
+                    else:
+                        return JsonResponse(
+                            Update_VoteSerializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
             else:
                 return JsonResponse(
-                    {"result": "Vote not found"}, safe=False, status=400
-                )
-
+                            {"result": "Vote not found"}, safe=False, status=400
+                        )
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
+
+
 
 
 @api_view(["POST"])
