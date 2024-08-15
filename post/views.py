@@ -33,6 +33,8 @@ def get_all_posts(request):
                     "contect",
                     "post_image",
                     "post_time",
+                    ""
+                    
                 )
             )
             for i in all_posts:
@@ -138,7 +140,7 @@ def update_comment(request):
             comment_obj = Comment.objects.get(id=request.data["id"])
             if comment_obj:
 
-                if not (comment_obj.user == request.user.id):
+                if not (comment_obj.user.id == request.user.id):
                     return JsonResponse(
                         {"result": "you can't edit this comment"},
                         safe=False,
@@ -176,7 +178,7 @@ def delete_comment(request):
             comment_obj = Comment.objects.get(id=request.data["id"])
             if comment_obj:
 
-                if not (comment_obj.user == request.user.id):
+                if not (comment_obj.user.id == request.user.id):
                     return JsonResponse(
                         {"result": "you can't delete this comment"},
                         safe=False,
