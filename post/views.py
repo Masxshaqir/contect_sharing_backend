@@ -33,14 +33,14 @@ def get_all_posts(request):
                     "contect",
                     "post_image",
                     "post_time",
-                    ""
-                    
+                    "user__email",
+                    "user__first_name",
+                    "user__last_name"
                 )
             )
             for i in all_posts:
-                i["post_image"] = (
-                    request.scheme + "://" + request.get_host() + "/" + i["post_image"]
-                )
+                
+                i["post_image"] =  (request.scheme + "://" + request.get_host() + "/" + i["post_image"]) if i["post_image"] else ""
                 i["comments"] = list(
                     Comment.objects.filter(post=i["id"]).values(
                         "id",
@@ -59,7 +59,6 @@ def get_all_posts(request):
                             "user__last_name",
                             "user__email",))
                 i['vote_counts'] = Vote.objects.filter(post=i["id"]).count()
-                
             return JsonResponse({"result": all_posts}, safe=False, status=200)
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
