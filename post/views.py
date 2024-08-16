@@ -123,6 +123,23 @@ def update_post(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_post(request):
+    try:
+        with transaction.atomic():
+            post_obj = Post.objects.get(id=request.data["id"])
+            post_obj.delete()
+            return JsonResponse(
+                {"result": "Deleted  Succefully"}, safe=False, status=200
+            )
+    except Exception as error:
+        return JsonResponse({"result": str(error)}, safe=False, status=400)
+
+
+
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_comment(request):
