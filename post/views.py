@@ -1,3 +1,4 @@
+from accounts.views import get_comments_per_post, get_posts, get_votes_per_post
 from .models import Post, Comment, Vote
 from .serializer import (
     UpdateCommentSerializer,
@@ -24,55 +25,12 @@ def get_all_posts(request):
     try:
         with transaction.atomic():
 
-            all_posts = list(
-                Post.objects.all().values(
-                    "id",
-                    "title",
-                    "category",
-                    "hashtag",
-                    "content",
-                    "post_image",
-                    "post_time",
-                    "user__email",
-                    "user__first_name",
-                    "user__last_name",
-                )
-            )
+            all_posts = get_posts(request)
             for i in all_posts:
-
-                i["post_image"] = (
-                    (
-                        request.scheme
-                        + "://"
-                        + request.get_host()
-                        + "/"
-                        + i["post_image"]
-                    )
-                    if i["post_image"]
-                    else ""
-                )
-                i["comments"] = list(
-                    Comment.objects.filter(post=i["id"]).values(
-                        "id",
-                        "comment",
-                        "comment_time",
-                        "user__email",
-                        "user__first_name",
-                        "user__last_name",
-                    )
-                )
-                i["all_votes"] = list(
-                    Vote.objects.filter(post=i["id"]).values(
-                        "id",
-                        "vote",
-                        "vote_time",
-                        "vote_update_time",
-                        "user__first_name",
-                        "user__last_name",
-                        "user__email",
-                    )
-                )
-                i["vote_counts"] = Vote.objects.filter(post=i["id"]).count()
+                
+                i["comments"] = get_comments_per_post(i['id'])
+                i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
+                
             return JsonResponse({"result": all_posts}, safe=False, status=200)
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)

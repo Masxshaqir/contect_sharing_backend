@@ -1,4 +1,4 @@
-from post.models import Post ,Comment, Vote
+from post.models import Post, Comment, Vote
 from rest_framework import status
 from accounts.serializer import *
 from django.http import JsonResponse
@@ -10,6 +10,80 @@ from django.contrib import auth
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
+
+def get_posts_per_user(request, user):
+    posts = list(
+        Post.objects.filter(user=user.id).values(
+            "id",
+            "title",
+            "category",
+            "hashtag",
+            "content",
+            "post_image",
+            "post_time",
+            "user__first_name",
+            "user__last_name",
+            "user__email",
+        )
+    )
+    for i in posts:
+        i["post_image"] = (
+            (request.scheme + "://" + request.get_host() + "/" + i["post_image"])
+            if i["post_image"]
+            else ""
+        )
+    return posts
+
+def get_posts(request):
+    posts = list(
+        Post.objects.all().values(
+            "id",
+            "title",
+            "category",
+            "hashtag",
+            "content",
+            "post_image",
+            "post_time",
+            "user__first_name",
+            "user__last_name",
+            "user__email",
+        )
+    )
+    for i in posts:
+        i["post_image"] = (
+            (request.scheme + "://" + request.get_host() + "/" + i["post_image"])
+            if i["post_image"]
+            else ""
+        )
+    return posts
+
+
+def get_comments_per_post(post):
+    comments=list(
+        Comment.objects.filter(post=post).values(
+            "id",
+            "comment",
+            "comment_time",
+            "user__email",
+            "user__first_name",
+            "user__last_name",
+        )
+    )
+    return comments
+
+def get_votes_per_post(post):
+    all_votes=list(
+                Vote.objects.filter(post=post).values(
+                    "vote",
+                    "vote_time",
+                    "vote_update_time",
+                    "user__first_name",
+                    "user__last_name",
+                    "user__email",
+                )
+            )
+    vote_counts =  Vote.objects.filter(post=post).count()
+    return all_votes ,vote_counts
 
 @api_view(["POST"])
 def register(request):
@@ -90,39 +164,20 @@ def Logout(request):
 @permission_classes([IsAuthenticated])
 def get_profile(request):
     try:
-        user=User.objects.get(email=request.data['email'])
-        posts = list(Post.objects.filter(user=user.id).values( 'id',"title", "category", "hashtag", "content", "post_image", "post_time","user__first_name","user__last_name","user__email" ))
+        user = User.objects.get(email=request.data["email"])
+        posts = get_posts_per_user(request,user)
+    
         for i in posts:
-                i["post_image"] = (
-                    (
-                        request.scheme
-                        + "://"
-                        + request.get_host()
-                        + "/"
-                        + i["post_image"]
-                    )
-                    if i["post_image"]
-                    else ""
-                )
-                i["comments"] = list(
-                Comment.objects.filter(post=i["id"]).values('id',"comment", "comment_time", "user__email","user__first_name","user__last_name")
-                )
-                i['all_votes'] = list(Vote.objects.filter(post=i["id"]).values(
-                            "vote",
-                            "vote_time",
-                            "vote_update_time",
-                            "user__first_name",
-                            "user__last_name",
-                            "user__email",))
-                i['vote_counts'] = Vote.objects.filter(post=i["id"]).count()
-                
+            i["comments"]= get_comments_per_post(i['id'])
+            i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
+
         user_data = {
             "last_login": user.last_login,
             "date_joined": user.date_joined,
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            'posts':posts
+            "posts": posts,
         }
         return JsonResponse({"result": user_data}, safe=False, status=200)
 
@@ -135,13 +190,16 @@ def get_profile(request):
 def update_profile(request):
     try:
         with transaction.atomic():
-            user_obj=User.objects.get(id=request.user.id)
-            update_AccountSerializer = updateAccountSerializer(user_obj,data=request.data,partial=True)
+            user_obj = User.objects.get(id=request.user.id)
+            update_AccountSerializer = updateAccountSerializer(
+                user_obj, data=request.data, partial=True
+            )
             if update_AccountSerializer.is_valid():
                 update_AccountSerializer.save()
-                
+
                 return JsonResponse(
-                    {"result": "Updated Succefully"}, safe=False, status=200)
+                    {"result": "Updated Succefully"}, safe=False, status=200
+                )
             else:
                 return JsonResponse(
                     update_AccountSerializer.errors, status=status.HTTP_400_BAD_REQUEST
@@ -149,13 +207,19 @@ def update_profile(request):
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_all_users(request):
     try:
         all_users = list(
-            User.objects.exclude(id=request.user.id).exclude(is_superuser=True)
-            .exclude(id__in=Friend.objects.filter(follower=request.user.id).values("followed"))
+            User.objects.exclude(id=request.user.id)
+            .exclude(is_superuser=True)
+            .exclude(
+                id__in=Friend.objects.filter(follower=request.user.id).values(
+                    "followed"
+                )
+            )
             .values("first_name", "last_name", "email")
         )
         return JsonResponse({"result": all_users}, safe=False, status=200)
@@ -186,7 +250,9 @@ def add_friend(request):
     try:
         with transaction.atomic():
             request.data["follower"] = request.user.id
-            request.data["followed"] = User.objects.filter(email=request.data['followed_email']).values('id')[0]['id']
+            request.data["followed"] = User.objects.filter(
+                email=request.data["followed_email"]
+            ).values("id")[0]["id"]
             add_Friend = addFriendSerializer(data=request.data)
 
             if add_Friend.is_valid():
@@ -206,13 +272,15 @@ def delete_friend(request):
     try:
         with transaction.atomic():
             request.data["follower"] = request.user.id
-            request.data["followed"] = User.objects.filter(email=request.data['followed_email']).values('id')[0]['id']
-            
-            Friend.objects.get(follower=request.data["follower"] ,followed=request.data["followed"]).delete()
-            
+            request.data["followed"] = User.objects.filter(
+                email=request.data["followed_email"]
+            ).values("id")[0]["id"]
+
+            Friend.objects.get(
+                follower=request.data["follower"], followed=request.data["followed"]
+            ).delete()
+
             return JsonResponse({"result": "followed"}, safe=False, status=200)
-            
+
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
-
-
