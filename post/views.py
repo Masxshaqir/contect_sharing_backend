@@ -52,6 +52,7 @@ def get_all_posts(request):
                     )
                 )
                 i['all_votes'] = list(Vote.objects.filter(post=i["id"]).values(
+                            "id",
                             "vote",
                             "vote_time",
                             "vote_update_time",
