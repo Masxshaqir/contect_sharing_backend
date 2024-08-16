@@ -213,7 +213,7 @@ def add_update_vote(request):
                 Vote_obj = Vote.objects.get(post=request.data['post'],user=request.user.id,id=request.data['id'])
             
                 if Vote_obj:
-                    if not (Vote_obj.user == request.user.id):
+                    if not (Vote_obj.user.id == request.user.id):
                         return JsonResponse(
                             {"result": "you can't edit this comment"},
                             safe=False,
