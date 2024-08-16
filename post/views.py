@@ -210,7 +210,7 @@ def add_update_vote(request):
         with transaction.atomic():
             
             if 'id' in request.data:
-                Vote_obj = Vote.objects.get(post=request.data['post'],user=request.user.id,id=request.daata['id'])
+                Vote_obj = Vote.objects.get(post=request.data['post'],user=request.user.id,id=request.data['id'])
             
                 if Vote_obj:
                     if not (Vote_obj.user == request.user.id):
