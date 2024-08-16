@@ -91,7 +91,7 @@ def Logout(request):
 def get_profile(request):
     try:
         user=User.objects.get(email=request.data['email'])
-        posts = list(Post.objects.filter(user=user.id).values( 'id',"title", "category", "hashtag", "contect", "post_image", "post_time"))
+        posts = list(Post.objects.filter(user=user.id).values( 'id',"title", "category", "hashtag", "contect", "post_image", "post_time","user__first_name","user__last_name","user__email" ))
         for i in posts:
                 i["post_image"] = request.scheme+'://' + request.get_host() + "/" + i["post_image"]
                 i["comments"] = list(
