@@ -13,4 +13,6 @@ urlpatterns = [
     path('add_update_vote/', add_update_vote , name="add_vote"),
     path('delete_post/', delete_post , name="delete_post"),
     path('get_votes/', get_votes , name="get_votes"),
+    path('filter_posts/', filter_posts , name="filter_posts"),
+
 ]

@@ -8,6 +8,7 @@ from .serializer import (
     addPostSerializer,
     addVoteSerializer,
 )
+from django.db.models import Avg
 from rest_framework import status
 from accounts.serializer import *
 from django.http import JsonResponse
@@ -64,19 +65,31 @@ def update_post(request):
     try:
         with transaction.atomic():
             post_obj = Post.objects.get(id=request.data["id"])
-            Update_PostSerializer = UpdatePostSerializer(
-                post_obj, data=request.data, partial=True
-            )
-            if Update_PostSerializer.is_valid():
-                Update_PostSerializer.save()
+            if post_obj:
 
-                return JsonResponse(
-                    {"result": "Updated Succefully"}, safe=False, status=200
-                )
+                if not (post_obj.user.id == request.user.id):
+                    return JsonResponse(
+                        {"result": "you can't edit this Post"},
+                        safe=False,
+                        status=400,
+                    )
+
+                Update_PostSerializer = UpdatePostSerializer(post_obj, data=request.data, partial=True)
+                if Update_PostSerializer.is_valid():
+                    Update_PostSerializer.save()
+
+                    return JsonResponse(
+                        {"result": "Updated Succefully"}, safe=False, status=200
+                    )
+                else:
+                    return JsonResponse(
+                        Update_PostSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
             else:
                 return JsonResponse(
-                    Update_PostSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    {"result": "Post not found"}, safe=False, status=400
                 )
+
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
@@ -86,14 +99,28 @@ def update_post(request):
 def delete_post(request):
     try:
         with transaction.atomic():
-            post_obj = Post.objects.get(id=request.data["id"])
-            post_obj.delete()
-            return JsonResponse(
-                {"result": "Deleted  Succefully"}, safe=False, status=200
-            )
+            post_obj = Post.objects.get(id=request.data["post"])
+            if post_obj:
+
+                if not (post_obj.user.id == request.user.id):
+                    return JsonResponse(
+                        {"result": "you can't delete this Post"},
+                        safe=False,
+                        status=400,
+                    )
+
+                post_obj.delete()
+                return JsonResponse(
+                    {"result": "Deleted  Succefully"}, safe=False, status=200
+                )
+            else:
+                return JsonResponse(
+                    {"result": "Post not found"}, safe=False, status=400
+                )
+
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
-
+    
 
 
 
@@ -172,11 +199,7 @@ def delete_comment(request):
                         safe=False,
                         status=400,
                     )
-                Comment.objects.get(
-                    id=request.data["id"],
-                    post=request.data["post"],
-                    user=request.user.id,
-                ).delete()
+                comment_obj.delete()
                 # Comment.objects.delete(id=request.data["id"])
 
                 return JsonResponse(
@@ -271,3 +294,76 @@ def get_votes(request):
             )
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def filter_posts(request):
+    try:
+        with transaction.atomic():
+            filter_by=request.data['filter_by']
+            filter_value=request.data['filter_value']
+            if filter_by == 'votes':
+                filterd_posts = list(
+                    Post.objects.annotate(average_vote=Avg('votes__value'))
+                    .filter(average_vote__gte=filter_value)  
+                    .values(
+                        "id",
+                        "title",
+                        "category",
+                        "hashtag",
+                        "content",
+                        "post_image",
+                        "post_time",
+                        "user__first_name",
+                        "user__last_name",
+                        "user__email",
+                    )
+                )
+                for i in filterd_posts:
+                    i["post_image"] = (
+                        (request.scheme + "://" + request.get_host() + "/" + i["post_image"])
+                        if i["post_image"]
+                        else ""
+                    )
+                    i["comments"] = get_comments_per_post(i['id'])
+                    i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
+
+                return JsonResponse(
+                    {"result": {"filterd_posts": filterd_posts}},
+                    safe=False,
+                    status=200,
+                )
+            else:    
+                filter_params = {filter_by: filter_value}
+                filterd_posts = list(
+                    Post.objects.filter(**filter_params).values(
+                        "id",
+                        "title",
+                        "category",
+                        "hashtag",
+                        "content",
+                        "post_image",
+                        "post_time",
+                        "user__first_name",
+                        "user__last_name",
+                        "user__email",
+                    )
+                )
+                for i in filterd_posts:
+                    i["post_image"] = (
+                        (request.scheme + "://" + request.get_host() + "/" + i["post_image"])
+                        if i["post_image"]
+                        else ""
+                    )
+                    i["comments"] = get_comments_per_post(i['id'])
+                    i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
+
+                return JsonResponse(
+                    {"result": {"filterd_posts": filterd_posts}},
+                    safe=False,
+                    status=200,
+                )
+    except Exception as error:
+        return JsonResponse({"result": str(error)}, safe=False, status=400)
+
