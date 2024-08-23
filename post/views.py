@@ -1,6 +1,7 @@
 from accounts.views import get_comments_per_post, get_posts, get_votes_per_post
 from .models import Post, Comment, Vote
 from .serializer import (
+    PostSerializer,
     UpdateCommentSerializer,
     UpdatePostSerializer,
     UpdateVoteSerializer,
@@ -20,6 +21,14 @@ from django.contrib import auth
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
+from .models import Post
+
+from .filters import PostFilter
 
 @api_view(["GET"])
 def get_all_posts(request):
@@ -296,74 +305,40 @@ def get_votes(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def filter_posts(request):
+
+@api_view(['GET'])
+def get_all_hashtags(request):
     try:
-        with transaction.atomic():
-            filter_by=request.data['filter_by']
-            filter_value=request.data['filter_value']
-            if filter_by == 'votes':
-                filterd_posts = list(
-                    Post.objects.annotate(average_vote=Avg('votes__value'))
-                    .filter(average_vote__gte=filter_value)  
-                    .values(
-                        "id",
-                        "title",
-                        "category",
-                        "hashtag",
-                        "content",
-                        "post_image",
-                        "post_time",
-                        "user__first_name",
-                        "user__last_name",
-                        "user__email",
-                    )
-                )
-                for i in filterd_posts:
-                    i["post_image"] = (
-                        (request.scheme + "://" + request.get_host() + "/" + i["post_image"])
-                        if i["post_image"]
-                        else ""
-                    )
-                    i["comments"] = get_comments_per_post(i['id'])
-                    i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
+        # Fetch all hashtags as a list of strings
+        hashtags_list = Post.objects.values_list('hashtag', flat=True).distinct()
+        
+        # Use a set comprehension to extract and deduplicate hashtags
+        all_hashtags = {tag for hashtags in hashtags_list for tag in hashtags.replace(' ', '').split('#') if tag}
 
-                return JsonResponse(
-                    {"result": {"filterd_posts": filterd_posts}},
-                    safe=False,
-                    status=200,
-                )
-            else:    
-                filter_params = {filter_by: filter_value}
-                filterd_posts = list(
-                    Post.objects.filter(**filter_params).values(
-                        "id",
-                        "title",
-                        "category",
-                        "hashtag",
-                        "content",
-                        "post_image",
-                        "post_time",
-                        "user__first_name",
-                        "user__last_name",
-                        "user__email",
-                    )
-                )
-                for i in filterd_posts:
-                    i["post_image"] = (
-                        (request.scheme + "://" + request.get_host() + "/" + i["post_image"])
-                        if i["post_image"]
-                        else ""
-                    )
-                    i["comments"] = get_comments_per_post(i['id'])
-                    i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
-
-                return JsonResponse(
-                    {"result": {"filterd_posts": filterd_posts}},
-                    safe=False,
-                    status=200,
-                )
+        return JsonResponse({'all_hashtags': list(all_hashtags)}, safe=False, status=200)
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
+
+@api_view(['GET'])
+def post_filter_list(request):
+    try:
+        queryset = Post.objects.all()
+        
+        # Apply filtering
+        filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+        filterset = PostFilter(request.GET, queryset=queryset)
+        queryset = filterset.qs
+        
+        # Apply search and ordering
+        search_fields = ['title', 'content', 'hashtag','category']
+        ordering_fields = ['post_time', 'post_update_time', 'title', 'category']
+        
+        for backend in filter_backends:
+            queryset = backend().filter_queryset(request, queryset, view=None)
+        
+        # Serialize the data
+        serializer = PostSerializer(queryset, many=True)
+        return Response(serializer.data)
+    except Exception as error:
+        return JsonResponse({"result": str(error)}, safe=False, status=400)
