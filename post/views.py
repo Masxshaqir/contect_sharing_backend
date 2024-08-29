@@ -323,7 +323,18 @@ def get_all_hashtags(request):
 @api_view(['GET'])
 def post_filter_list(request):
     try:
-        queryset =  Post.objects.all().select_related('user')
+        queryset = Post.objects.all().values(
+            "id",
+            "title",
+            "category",
+            "hashtag",
+            "content",
+            "post_image",
+            "post_time",
+            "user__first_name",
+            "user__last_name",
+            "user__email",
+        )
         
         # Apply filtering
         filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
@@ -336,10 +347,24 @@ def post_filter_list(request):
         
         for backend in filter_backends:
             queryset = backend().filter_queryset(request, queryset, view=None)
-        
         # Serialize the data
         serializer = PostSerializer(queryset, many=True)
-        all_posts= serializer.data
+        queryset = queryset.values(
+            "id",
+            "title",
+            "category",
+            "hashtag",
+            "content",
+            "post_image",
+            "post_time",
+            "user__first_name",
+            "user__last_name",
+            "user__email",
+        )
+        
+        # Since you're using .values(), you don't need to serialize the data again
+        all_posts = list(queryset)
+
         for i in all_posts:
             i["comments"] = get_comments_per_post(i['id'])
             i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
