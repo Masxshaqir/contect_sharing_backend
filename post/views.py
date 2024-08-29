@@ -339,6 +339,11 @@ def post_filter_list(request):
         
         # Serialize the data
         serializer = PostSerializer(queryset, many=True)
-        return Response(serializer.data)
+        all_posts= serializer.data
+        for i in all_posts:
+            i["comments"] = get_comments_per_post(i['id'])
+            i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
+            
+        return JsonResponse({"result": all_posts}, safe=False, status=200)
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
