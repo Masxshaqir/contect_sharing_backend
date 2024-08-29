@@ -323,18 +323,7 @@ def get_all_hashtags(request):
 @api_view(['GET'])
 def post_filter_list(request):
     try:
-        queryset = Post.objects.all().values(
-            "id",
-            "title",
-            "category",
-            "hashtag",
-            "content",
-            "post_image",
-            "post_time",
-            "user__first_name",
-            "user__last_name",
-            "user__email",
-        )
+        queryset =  Post.objects.all().select_related('user')
         
         # Apply filtering
         filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
