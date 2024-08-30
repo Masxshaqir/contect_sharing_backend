@@ -4,12 +4,13 @@ from django.db import models
 from django.db.models import Q
 class PostFilter(filters.FilterSet):
     # username = filters.CharFilter(field_name='user__username', lookup_expr='icontains')
-    popularity = filters.OrderingFilter(
-        fields=(
-            ('vote__count', 'popularity'),
-        ),
-        method='filter_popularity'
-    )
+    # popularity = filters.OrderingFilter(
+    #     fields=(
+    #         ('vote__count', 'popularity'),
+    #     ),
+    #     method='filter_popularity'
+    # )
+    popularity = filters.NumberFilter(method='filter_popularity')
     post_time = filters.DateFromToRangeFilter(field_name='post_time')
     title = filters.CharFilter(field_name='title', lookup_expr='icontains')
     content_keywords = filters.CharFilter(field_name='content', lookup_expr='icontains')
@@ -27,4 +28,4 @@ class PostFilter(filters.FilterSet):
             Q(user__last_name__icontains=value)
         )
     def filter_popularity(self, queryset, name, value):
-        return queryset.annotate(vote_count=models.Count('vote')).order_by('-vote_count')
+        return queryset.annotate(vote_count=models.Count('vote')).filter(vote_count=value)
