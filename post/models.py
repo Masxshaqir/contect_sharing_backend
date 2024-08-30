@@ -14,7 +14,7 @@ class Post(models.Model):
                                                                                  ('Thought-Provoking','Thought-Provoking'),
                                                                                  ('Romantic','Romantic')))
     hashtag=models.CharField(max_length=150,null=False,blank=False)
-    content=models.CharField(max_length=500,null=False,blank=False)
+    content=models.CharField(max_length=500,null=True,blank=True)
     post_image=models.FileField(upload_to='static/Posts/',null=True,blank=True)
     post_time=models.DateTimeField(auto_now_add=True)
     post_update_time=models.DateTimeField(auto_now=True)
