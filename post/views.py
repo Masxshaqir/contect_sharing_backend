@@ -354,6 +354,11 @@ def post_filter_list(request):
         all_posts = list(queryset)
 
         for i in all_posts:
+            i["post_image"] = (
+            (request.scheme + "://" + request.get_host() + "/" + i["post_image"])
+            if i["post_image"]
+            else ""
+            )
             i["comments"] = get_comments_per_post(i['id'])
             i["all_votes"] , i["vote_counts"] = get_votes_per_post(i['id'])
             
