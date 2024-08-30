@@ -74,6 +74,7 @@ def get_comments_per_post(post):
 def get_votes_per_post(post):
     all_votes=list(
                 Vote.objects.filter(post=post).values(
+                    'id',
                     "vote",
                     "vote_time",
                     "vote_update_time",
