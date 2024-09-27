@@ -9,6 +9,9 @@ from .models import User
 from django.contrib import auth
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 
 def get_posts_per_user(request, user):
@@ -86,6 +89,11 @@ def get_votes_per_post(post):
     vote_counts =  Vote.objects.filter(post=post).count()
     return all_votes ,vote_counts
 
+@swagger_auto_schema(
+    method='post',
+    request_body=UserSerializer,  # Define the request body as the serializer
+    responses={200: 'Success', 400: 'Validation Error'}
+)
 @api_view(["POST"])
 def register(request):
     try:
@@ -111,7 +119,11 @@ def register(request):
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
-
+@swagger_auto_schema(
+    method='post',
+    request_body=AuthTokenSerializer,  # Define the request body as the serializer
+    responses={200: 'Success', 400: 'Validation Error'}
+)
 @api_view(["POST"])
 def signin(request):
     try:
@@ -144,6 +156,19 @@ def signin(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Header type
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Mark as required
+)
+
+@swagger_auto_schema(
+    method='post',
+    manual_parameters=[auth_header],  # Add the Authorization header to Swagger
+    responses={200: 'Logged out', 400: 'Error occurred'}
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def Logout(request):
@@ -161,6 +186,29 @@ def Logout(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+# Define the request body schema for email
+email_param = openapi.Schema(
+    type=openapi.TYPE_OBJECT,  # Define the body as an object
+    properties={
+        'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email')  # Add the email field
+    },
+    required=['email'],  # Mark email as required
+)
+
+@swagger_auto_schema(
+    method='post',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=email_param,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def get_profile(request):
@@ -186,6 +234,20 @@ def get_profile(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Header type
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Mark as required
+)
+
+@swagger_auto_schema(
+    method='PUT',
+    manual_parameters=[auth_header],  # Add the Authorization header to Swagger
+    request_body=updateAccountSerializer,
+    # responses={200: 'Logged out', 400: 'Error occurred'}
+)
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
@@ -209,6 +271,19 @@ def update_profile(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Header type
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Mark as required
+)
+
+@swagger_auto_schema(
+    method='GET',
+    manual_parameters=[auth_header],  # Add the Authorization header to Swagger
+    # responses={200: 'Logged out', 400: 'Error occurred'}
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_all_users(request):
@@ -228,7 +303,19 @@ def get_all_users(request):
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Header type
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Mark as required
+)
 
+@swagger_auto_schema(
+    method='GET',
+    manual_parameters=[auth_header],  # Add the Authorization header to Swagger
+    # responses={200: 'Logged out', 400: 'Error occurred'}
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_following_users(request):
@@ -245,6 +332,29 @@ def get_following_users(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+# Define the request body schema for email
+followed_email = openapi.Schema(
+    type=openapi.TYPE_OBJECT,  # Define the body as an object
+    properties={
+        'followed_email': openapi.Schema(type=openapi.TYPE_STRING, description='followed email')  # Add the email field
+    },
+    required=['followed_email'],  # Mark email as required
+)
+
+@swagger_auto_schema(
+    method='post',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=followed_email,  # Define the request body inline
+    # responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_friend(request):
@@ -266,6 +376,31 @@ def add_friend(request):
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
+
+
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+# Define the request body schema for email
+followed_email = openapi.Schema(
+    type=openapi.TYPE_OBJECT,  # Define the body as an object
+    properties={
+        'followed_email': openapi.Schema(type=openapi.TYPE_STRING, description='followed email')  # Add the email field
+    },
+    required=['followed_email'],  # Mark email as required
+)
+
+@swagger_auto_schema(
+    method='DELETE',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=followed_email,  # Define the request body inline
+    # responses={200: 'Success', 400: 'Error occurred'}
+)
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])

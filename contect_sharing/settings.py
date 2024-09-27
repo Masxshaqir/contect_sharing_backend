@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'accounts',
-    'post'
+    'post',
+    'rest_framework_swagger',       # Swagger 
+    'drf_yasg'                      # Yet Another Swagger generator
 ]
 
 

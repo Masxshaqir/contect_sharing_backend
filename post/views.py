@@ -27,9 +27,16 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from .models import Post
-
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .filters import PostFilter
 
+
+@swagger_auto_schema(
+    method='GET',
+    # manual_parameters=[auth_header],  # Add the Authorization header to Swagger
+    # responses={200: 'Logged out', 400: 'Error occurred'}
+)
 @api_view(["GET"])
 def get_all_posts(request):
     try:
@@ -46,6 +53,22 @@ def get_all_posts(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+
+@swagger_auto_schema(
+    method='post',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=addPostSerializer,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_post(request):
@@ -67,6 +90,23 @@ def add_post(request):
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
+
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+
+@swagger_auto_schema(
+    method='PUT',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=UpdatePostSerializer,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'},
+    consumes=["multipart/form-data"]
+)
 
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
@@ -103,6 +143,28 @@ def update_post(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+post = openapi.Schema(
+    type=openapi.TYPE_OBJECT,  # Define the body as an object
+    properties={
+        'post': openapi.Schema(type=openapi.TYPE_STRING, description='post id')  # Add the email field
+    },
+    required=['post'],  # Mark email as required
+)
+
+@swagger_auto_schema(
+    method='DELETE',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=post,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_post(request):
@@ -132,7 +194,29 @@ def delete_post(request):
     
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
 
+comment_body_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'comment': openapi.Schema(type=openapi.TYPE_STRING, description='Comment text'),
+        'post': openapi.Schema(type=openapi.TYPE_STRING, description='Post ID'),
+    },
+    required=['comment', 'post'],  # Specify required fields
+)
+
+@swagger_auto_schema(
+    method='POST',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=comment_body_schema,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -155,6 +239,21 @@ def add_comment(request):
     except Exception as error:
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+
+@swagger_auto_schema(
+    method='PUT',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=UpdateCommentSerializer,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
@@ -194,6 +293,28 @@ def update_comment(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+id = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'id': openapi.Schema(type=openapi.TYPE_STRING, description='Comment id'),
+ 
+    },
+    required=['id'],  # Specify required fields
+)
+@swagger_auto_schema(
+    method='DELETE',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=id,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_comment(request):
@@ -223,6 +344,29 @@ def delete_comment(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+data = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'id': openapi.Schema(type=openapi.TYPE_STRING, description='Comment id'),
+        'post' : openapi.Schema(type=openapi.TYPE_STRING, description='Post id'),
+        'vote' : openapi.Schema(type=openapi.TYPE_INTEGER, description='Vote'),
+    },
+    required=['vote','post'],  # Specify required fields
+)
+@swagger_auto_schema(
+    method='POST',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=data,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_update_vote(request):
@@ -280,6 +424,29 @@ def add_update_vote(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+post = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+ 
+        'post' : openapi.Schema(type=openapi.TYPE_STRING, description='Post id'),
+    
+    },
+    required=['post'],  # Specify required fields
+)
+@swagger_auto_schema(
+    method='POST',
+    manual_parameters=[auth_header],  # Include the Authorization header
+    request_body=post,  # Define the request body inline
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(["POST"])
 def get_votes(request):
     try:
@@ -320,6 +487,59 @@ def get_all_hashtags(request):
         return JsonResponse({"result": str(error)}, safe=False, status=400)
 
 
+auth_header = openapi.Parameter(
+    'Authorization',  # Name of the header
+    openapi.IN_HEADER,  # Location: header
+    description="Token <user_token>",  # Description of the header
+    type=openapi.TYPE_STRING,  # Data type
+    required=True  # Required field
+)
+
+category_param = openapi.Parameter(
+    'category',  # Name of the query parameter
+    openapi.IN_QUERY,  # Location: query string
+    description='Category of the post',  # Description of the query parameter
+    type=openapi.TYPE_STRING,  # Data type
+    required=False  # Optional field
+)
+
+title_param = openapi.Parameter(
+    'title',  # Name of the query parameter
+    openapi.IN_QUERY,  # Location: query string
+    description='Title of the post',  # Description of the query parameter
+    type=openapi.TYPE_STRING,  # Data type
+    required=False  # Optional field
+)
+
+hashtag_param = openapi.Parameter(
+    'hashtag',  # Name of the query parameter
+    openapi.IN_QUERY,  # Location: query string
+    description='Hashtag of the post',  # Description of the query parameter
+    type=openapi.TYPE_STRING,  # Data type
+    required=False  # Optional field
+)
+
+content_param = openapi.Parameter(
+    'content',  # Name of the query parameter
+    openapi.IN_QUERY,  # Location: query string
+    description='Content of the post',  # Description of the query parameter
+    type=openapi.TYPE_STRING,  # Data type
+    required=False  # Optional field
+)
+
+post_time_param = openapi.Parameter(
+    'post_time',  # Name of the query parameter
+    openapi.IN_QUERY,  # Location: query string
+    description='Post time',  # Description of the query parameter
+    type=openapi.TYPE_STRING,  # Data type
+    required=False  # Optional field
+)
+
+@swagger_auto_schema(
+    method='GET',
+    manual_parameters=[auth_header, category_param, title_param, hashtag_param, content_param, post_time_param],
+    responses={200: 'Success', 400: 'Error occurred'}
+)
 @api_view(['GET'])
 def post_filter_list(request):
     try:
