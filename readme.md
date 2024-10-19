@@ -2,6 +2,26 @@
 
 This project is a content-sharing platform developed using Django Rest Framework (DRF) for the backend and React.js for the frontend. The platform allows users to register, log in, create posts, comment on posts, and vote on posts. The platform also supports following users and managing friendships.
 
+# Project Goals
+Here are some project goals for your content-sharing platform:
+
+1- User Engagement and Interaction: Encourage users to actively participate by enabling post creation, voting, and commenting on content. Support user-to-user interaction through       friendships and following features.
+
+2- Content Discovery and Search: Provide an easy way for users to discover content through hashtag filtering, post search functionality, and categorization.
+
+3- Scalability and Extensibility: Build a scalable backend with Django Rest Framework, supporting potential migration to more robust databases like PostgreSQL or MySQL.
+
+4- User-Centric Features: Implement profile management, allowing users to personalize their experience and manage their interactions (e.g., adding/removing friends, updating 5- profiles).
+
+6- Secure Authentication: Ensure secure access control with token-based authentication for user registration, login, and access to resources.
+
+7- Mobile-Ready Interface: Deliver a responsive React.js frontend to provide a smooth user experience across devices.
+
+8- Smooth Deployment and Maintenance: Utilize Heroku for deployment, ensuring the platform can be updated and scaled efficiently.
+
+9- Collaboration and Community Growth: Foster community engagement through contributions, allowing external developers to add features or fix issues by supporting open-source collaboration.
+
+
 ## Features
 
 ### User Management
