@@ -90,6 +90,27 @@ This project is a content-sharing platform developed using Django Rest Framework
 
 After setting up the project, you can access the platform by navigating to `http://localhost:8000/` in your web browser. Use the admin panel at `http://localhost:8000/admin/` to manage users, posts, comments, and other data.
 
+### Deployment to Heroku
+To deploy the application to Heroku, follow these steps:
+1. **Prerequisites**
+    - Ensure you have a Heroku account.
+    - Ensure your project is hosted on GitHub.
+2. **Steps**
+   - Create a New Heroku App.
+       Log in to your Heroku dashboard.
+       Click on the New button in the top right corner and select Create New App.
+       Provide a unique name for your app and choose a region. Click Create App.
+
+   - Connect to GitHub Repository
+       In your Heroku app dashboard, go to the Deploy tab.
+       In the Deployment method section, select GitHub.
+       Search for your repository by name and click Connect.
+
+   
+   - Enable Automatic Deploys (Optional)
+       In the Deploy tab, you can enable Automatic Deploys from the GitHub branch of your choice. This will automatically deploy your app whenever you push changes to that branch.
+       Alternatively, you can deploy manually by clicking Deploy Branch under the Manual Deploy section.
+     
 ## Technologies Used
 - **Backend**: Django, Django Rest Framework
 - **Frontend**: React.js
