@@ -111,7 +111,7 @@ Here are some project goals for your content-sharing platform:
 After setting up the project, you can access the platform by navigating to `http://localhost:8000/` in your web browser. Use the admin panel at `http://localhost:8000/admin/` to manage users, posts, comments, and other data.
 
 ## Databse Access
-to access databse go to [https://crystal-website-21a243b9531a.herokuapp.com/admin](https://contentsharing-9b70377869cc.herokuapp.com/admin)
+to access databse go to https://contentsharing-9b70377869cc.herokuapp.com/admin
 and login with Email : admin@admin.com
 	       password : admin
 
