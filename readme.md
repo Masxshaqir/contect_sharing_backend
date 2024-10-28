@@ -135,7 +135,14 @@ To deploy the application to Heroku, follow these steps:
    - Enable Automatic Deploys (Optional)
        In the Deploy tab, you can enable Automatic Deploys from the GitHub branch of your choice. This will automatically deploy your app whenever you push changes to that branch.
        Alternatively, you can deploy manually by clicking Deploy Branch under the Manual Deploy section.
-     
+
+
+
+## Admin Panel Access
+to access databse go to https://contentsharing-9b70377869cc.herokuapp.com/admin
+and login with Email : admin@admin.com
+	       password : admin
+
 ## Technologies Used
 - **Backend**: Django, Django Rest Framework
 - **Frontend**: React.js
